@@ -136,49 +136,7 @@ function createOrgs() {
     rm -Rf organizations/peerOrganizations && rm -Rf organizations/ordererOrganizations
   fi
 
-  # Create crypto material using cryptogen
-  if [ "$CRYPTO" == "cryptogen" ]; then
-    which cryptogen
-    if [ "$?" -ne 0 ]; then
-      fatalln "cryptogen tool not found. exiting"
-    fi
-    infoln "Generate certificates using cryptogen tool"
-
-    infoln "Create Org1 Identities"
-
-    set -x
-    cryptogen generate --config=./organizations/cryptogen/crypto-config-org1.yaml --output="organizations"
-    res=$?
-    { set +x; } 2>/dev/null
-    if [ $res -ne 0 ]; then
-      fatalln "Failed to generate certificates..."
-    fi
-
-    infoln "Create Org2 Identities"
-
-    set -x
-    cryptogen generate --config=./organizations/cryptogen/crypto-config-org2.yaml --output="organizations"
-    res=$?
-    { set +x; } 2>/dev/null
-    if [ $res -ne 0 ]; then
-      fatalln "Failed to generate certificates..."
-    fi
-
-    infoln "Create Orderer Org Identities"
-
-    set -x
-    cryptogen generate --config=./organizations/cryptogen/crypto-config-orderer.yaml --output="organizations"
-    res=$?
-    { set +x; } 2>/dev/null
-    if [ $res -ne 0 ]; then
-      fatalln "Failed to generate certificates..."
-    fi
-
-  fi
-
   # Create crypto material using Fabric CAs
-  if [ "$CRYPTO" == "Certificate Authorities" ]; then
-
     infoln "Generate certificates using Fabric CA's"
 
     IMAGE_TAG=${CA_IMAGETAG} docker-compose -f $COMPOSE_FILE_CA up -d 2>&1
@@ -205,8 +163,6 @@ function createOrgs() {
     infoln "Create Orderer Org Identities"
 
     createOrderer
-
-  fi
 
   infoln "Generate CCP files for Org1 and Org2"
   ./organizations/ccp-generate.sh
@@ -277,9 +233,8 @@ function networkUp() {
 
   COMPOSE_FILES="-f ${COMPOSE_FILE_BASE}"
 
-  if [ "${DATABASE}" == "couchdb" ]; then
-    COMPOSE_FILES="${COMPOSE_FILES} -f ${COMPOSE_FILE_COUCH}"
-  fi
+  #create couchDB containers
+  COMPOSE_FILES="${COMPOSE_FILES} -f ${COMPOSE_FILE_COUCH}"
 
   IMAGE_TAG=$IMAGETAG docker-compose ${COMPOSE_FILES} up -d 2>&1
 
@@ -353,7 +308,7 @@ function networkDown() {
 # native binaries for your platform, e.g., darwin-amd64 or linux-amd64
 OS_ARCH=$(echo "$(uname -s | tr '[:upper:]' '[:lower:]' | sed 's/mingw64_nt.*/windows/')-$(uname -m | sed 's/x86_64/amd64/g')" | awk '{print tolower($0)}')
 # Using crpto vs CA. default is cryptogen
-CRYPTO="cryptogen"
+CRYPTO="Certificate Authorities"
 # timeout duration - the duration the CLI should wait for a response from
 # another container before giving up
 MAX_RETRY=5
@@ -383,7 +338,7 @@ COMPOSE_FILE_COUCH_ORG3=addOrg3/docker/docker-compose-couch-org3.yaml
 COMPOSE_FILE_ORG3=addOrg3/docker/docker-compose-org3.yaml
 #
 # use go as the default language for chaincode
-CC_SRC_LANGUAGE="go"
+CC_SRC_LANGUAGE="javascript"
 # Chaincode version
 CC_VERSION="1.0"
 # Chaincode definition sequence
@@ -393,7 +348,7 @@ IMAGETAG="latest"
 # default ca image tag
 CA_IMAGETAG="latest"
 # default database
-DATABASE="leveldb"
+DATABASE="couchdb"
 
 # Parse commandline args
 

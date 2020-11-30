@@ -78,7 +78,7 @@ function printHelp() {
     println "      \033[0;32mup\033[0m - Bring up Fabric orderer and peer nodes. No channel is created"
     println "      \033[0;32mup createChannel\033[0m - Bring up fabric network with one channel"
     println "      \033[0;32mcreateChannel\033[0m - Create and join a channel after the network is created"
-    println "      \033[0;32mdeployCC\033[0m - Deploy a chaincode to a channel (defaults to asset-transfer-basic)"
+    println "      \033[0;32mdeployCC\033[0m - Deploy a chaincode to a channel (defaults to example-chaincode)"
     println "      \033[0;32mdown\033[0m - Bring down the network"
     println
     println "    Flags:"

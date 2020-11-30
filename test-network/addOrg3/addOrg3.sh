@@ -50,39 +50,11 @@ function printHelp () {
 # (x509 certs) for the new org.  After we run the tool, the certs will
 # be put in the organizations folder with org1 and org2
 
-# Create Organziation crypto material using cryptogen or CAs
+# Create Organziation crypto material using CAs
 function generateOrg3() {
 
-  # Create crypto material using cryptogen
-  if [ "$CRYPTO" == "cryptogen" ]; then
-    which cryptogen
-    if [ "$?" -ne 0 ]; then
-      echo "cryptogen tool not found. exiting"
-      exit 1
-    fi
-    echo
-    echo "##########################################################"
-    echo "##### Generate certificates using cryptogen tool #########"
-    echo "##########################################################"
-    echo
-
-    echo "##########################################################"
-    echo "############ Create Org3 Identities ######################"
-    echo "##########################################################"
-
-    set -x
-    cryptogen generate --config=org3-crypto.yaml --output="../organizations"
-    res=$?
-    { set +x; } 2>/dev/null
-    if [ $res -ne 0 ]; then
-      echo "Failed to generate certificates..."
-      exit 1
-    fi
-
-  fi
 
   # Create crypto material using Fabric CAs
-  if [ "$CRYPTO" == "Certificate Authorities" ]; then
 
     fabric-ca-client version > /dev/null 2>&1
     if [[ $? -ne 0 ]]; then
@@ -110,7 +82,6 @@ function generateOrg3() {
 
     createOrg3
 
-  fi
 
   echo
   echo "Generate CCP files for Org3"
@@ -214,7 +185,7 @@ OS_ARCH=$(echo "$(uname -s|tr '[:upper:]' '[:lower:]'|sed 's/mingw64_nt.*/window
 # another container before giving up
 
 # Using crpto vs CA. default is cryptogen
-CRYPTO="cryptogen"
+CRYPTO="Certificate Authorities"
 
 CLI_TIMEOUT=10
 #default for delay
@@ -232,7 +203,7 @@ IMAGETAG="latest"
 # default ca image tag
 CA_IMAGETAG="latest"
 # database
-DATABASE="leveldb"
+DATABASE="couchdb"
 
 # Parse commandline args
 

@@ -12,7 +12,7 @@
 #
 
 echo
-echo "========= Getting Org3 on to your test network ========= "
+echo "========= Getting Org4 on to your test network ========= "
 echo
 CHANNEL_NAME="$1"
 DELAY="$2"
@@ -26,7 +26,7 @@ COUNTER=1
 MAX_RETRY=5
 
 # import environment variables
-. scripts/org3-scripts/envVarCLI.sh
+. scripts/org4-scripts/envVarCLI.sh
 
 ## Sometimes Join takes time hence RETRY at least 5 times
 joinChannelWithRetry() {
@@ -58,11 +58,11 @@ res=$?
 cat log.txt
 verifyResult $res "Fetching config block from orderer has Failed"
 
-joinChannelWithRetry 3
-echo "===================== peer0.org3 joined channel '$CHANNEL_NAME' ===================== "
+joinChannelWithRetry 4
+echo "===================== peer0.org4 joined channel '$CHANNEL_NAME' ===================== "
 
 echo
-echo "========= Finished adding Org3 to your test network! ========= "
+echo "========= Finished adding Org4 to your test network! ========= "
 echo
 
 exit 0

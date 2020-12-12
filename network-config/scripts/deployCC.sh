@@ -40,8 +40,8 @@ if [ "$CC_SRC_PATH" = "NA" ]; then
   # first see which chaincode we have. This will be based on the
   # short name of the known chaincode sample
   if [ "$CC_NAME" = "basic" ]; then
-    println $'\e[0;32m'example-chaincode$'\e[0m' chaincode
-    CC_SRC_PATH="../example-chaincode"
+    println $'\e[0;32m'chaincode$'\e[0m' chaincode
+    CC_SRC_PATH="../chaincode"
   else
     fatalln "The chaincode name ${CC_NAME} is not supported by this script. Supported chaincode names are: basic, events, ledger, private, sbe, secured"
   fi

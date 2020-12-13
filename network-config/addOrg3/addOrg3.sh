@@ -18,13 +18,13 @@ export VERBOSE=false
 # Print the usage message
 function printHelp () {
   echo "Usage: "
-  echo "  addOrg4.sh up|down|generate [-c <channel name>] [-t <timeout>] [-d <delay>] [-f <docker-compose-file>] [-s <dbtype>]"
-  echo "  addOrg4.sh -h|--help (print this message)"
+  echo "  addOrg3.sh up|down|generate [-c <channel name>] [-t <timeout>] [-d <delay>] [-f <docker-compose-file>] [-s <dbtype>]"
+  echo "  addOrg3.sh -h|--help (print this message)"
   echo "    <mode> - one of 'up', 'down', or 'generate'"
-  echo "      - 'up' - add org4 to the sample network. You need to bring up the test network and create a channel first."
-  echo "      - 'down' - bring down the test network and org4 nodes"
+  echo "      - 'up' - add org3 to the sample network. You need to bring up the test network and create a channel first."
+  echo "      - 'down' - bring down the test network and org3 nodes"
   echo "      - 'generate' - generate required certificates and org definition"
-  echo "    -c <channel name> - test network channel name (defaults to \"mychannel\")"
+  echo "    -c <channel name> - test network channel name (defaults to \"default-channel\")"
   echo "    -ca <use CA> -  Use a CA to generate the crypto material"
   echo "    -t <timeout> - CLI timeout duration in seconds (defaults to 10)"
   echo "    -d <delay> - delay duration in seconds (defaults to 3)"
@@ -36,14 +36,14 @@ function printHelp () {
   echo "Typically, one would first generate the required certificates and "
   echo "genesis block, then bring up the network. e.g.:"
   echo
-  echo "	addOrg4.sh generate"
-  echo "	addOrg4.sh up"
-  echo "	addOrg4.sh up -c mychannel -s couchdb"
-  echo "	addOrg4.sh down"
+  echo "	addOrg3.sh generate"
+  echo "	addOrg3.sh up"
+  echo "	addOrg3.sh up -c mychannel -s couchdb"
+  echo "	addOrg3.sh down"
   echo
   echo "Taking all defaults:"
-  echo "	addOrg4.sh up"
-  echo "	addOrg4.sh down"
+  echo "	addOrg3.sh up"
+  echo "	addOrg3.sh down"
 }
 
 # We use the cryptogen tool to generate the cryptographic material
@@ -51,7 +51,7 @@ function printHelp () {
 # be put in the organizations folder with org1 and org2
 
 # Create Organziation crypto material using CAs
-function generateOrg4() {
+function generateOrg3() {
 
 
   # Create crypto material using Fabric CAs
@@ -70,61 +70,61 @@ function generateOrg4() {
     echo "##### Generate certificates using Fabric CA's ############"
     echo "##########################################################"
 
-    IMAGE_TAG=${CA_IMAGETAG} docker-compose -f $COMPOSE_FILE_CA_ORG4 up -d 2>&1
+    IMAGE_TAG=${CA_IMAGETAG} docker-compose -f $COMPOSE_FILE_CA_ORG3 up -d 2>&1
 
     . fabric-ca/registerEnroll.sh
 
     sleep 10
 
     echo "##########################################################"
-    echo "############ Create Org4 Identities ######################"
+    echo "############ Create Org3 Identities ######################"
     echo "##########################################################"
 
-    createOrg4
+    createOrg3
 
 
   echo
-  echo "Generate CCP files for Org4"
+  echo "Generate CCP files for Org3"
   ./ccp-generate.sh
 }
 
 # Generate channel configuration transaction
-function generateOrg4Definition() {
+function generateOrg3Definition() {
   which configtxgen
   if [ "$?" -ne 0 ]; then
     echo "configtxgen tool not found. exiting"
     exit 1
   fi
   echo "##########################################################"
-  echo "#######  Generating Org4 organization definition #########"
+  echo "#######  Generating Org3 organization definition #########"
   echo "##########################################################"
    export FABRIC_CFG_PATH=$PWD
    set -x
-   configtxgen -printOrg Org4MSP > ../organizations/peerOrganizations/org4.example.com/org4.json
+   configtxgen -printOrg Org3MSP > ../organizations/peerOrganizations/org3.example.com/org3.json
    res=$?
    { set +x; } 2>/dev/null
    if [ $res -ne 0 ]; then
-     echo "Failed to generate Org4 config material..."
+     echo "Failed to generate Org3 config material..."
      exit 1
    fi
   echo
 }
 
-function Org4Up () {
+function Org3Up () {
   # start org3 nodes
   if [ "${DATABASE}" == "couchdb" ]; then
-    IMAGE_TAG=${IMAGETAG} docker-compose -f $COMPOSE_FILE_ORG4 -f $COMPOSE_FILE_COUCH_ORG4 up -d 2>&1
+    IMAGE_TAG=${IMAGETAG} docker-compose -f $COMPOSE_FILE_ORG3 -f $COMPOSE_FILE_COUCH_ORG3 up -d 2>&1
   else
-    IMAGE_TAG=$IMAGETAG docker-compose -f $COMPOSE_FILE_ORG4 up -d 2>&1
+    IMAGE_TAG=$IMAGETAG docker-compose -f $COMPOSE_FILE_ORG3 up -d 2>&1
   fi
   if [ $? -ne 0 ]; then
-    echo "ERROR !!!! Unable to start Org4 network"
+    echo "ERROR !!!! Unable to start Org3 network"
     exit 1
   fi
 }
 
 # Generate the needed certificates, the genesis block and start the network.
-function addOrg4 () {
+function addOrg3 () {
 
   # If the test network is not up, abort
   if [ ! -d ../organizations/ordererOrganizations ]; then
@@ -135,24 +135,24 @@ function addOrg4 () {
   fi
 
   # generate artifacts if they don't exist
-  if [ ! -d "../organizations/peerOrganizations/org4.example.com" ]; then
-    generateOrg4
-    generateOrg4Definition
+  if [ ! -d "../organizations/peerOrganizations/org3.example.com" ]; then
+    generateOrg3
+    generateOrg3Definition
   fi
 
   CONTAINER_IDS=$(docker ps -a | awk '($2 ~ /fabric-tools/) {print $1}')
   if [ -z "$CONTAINER_IDS" -o "$CONTAINER_IDS" == " " ]; then
     echo "Bringing up network"
-    Org4Up
+    Org3Up
   fi
 
   # Use the CLI container to create the configuration transaction needed to add
-  # Org4 to the network
+  # Org3 to the network
   echo
   echo "###############################################################"
-  echo "####### Generate and submit config tx to add Org4 #############"
+  echo "####### Generate and submit config tx to add Org3 #############"
   echo "###############################################################"
-  docker exec Org4cli ./scripts/org4-scripts/step1org4.sh $CHANNEL_NAME $CLI_DELAY $CLI_TIMEOUT $VERBOSE
+  docker exec Org3cli ./scripts/org3-scripts/step1org3.sh $CHANNEL_NAME $CLI_DELAY $CLI_TIMEOUT $VERBOSE
   if [ $? -ne 0 ]; then
     echo "ERROR !!!! Unable to create config tx"
     exit 1
@@ -160,14 +160,44 @@ function addOrg4 () {
 
   echo
   echo "###############################################################"
-  echo "############### Have Org4 peers join network ##################"
+  echo "############### Have Org3 peers join network ##################"
   echo "###############################################################"
-  docker exec Org4cli ./scripts/org4-scripts/step2org4.sh $CHANNEL_NAME $CLI_DELAY $CLI_TIMEOUT $VERBOSE
+  docker exec Org3cli ./scripts/org3-scripts/step2org3.sh $CHANNEL_NAME $CLI_DELAY $CLI_TIMEOUT $VERBOSE
   if [ $? -ne 0 ]; then
     echo "ERROR !!!! Unable to have Org3 peers join network"
     exit 1
   fi
 
+}
+
+#use this method to add Org3 to multiple organizations
+function joinChannel() {
+  # generate artifacts if they don't exist
+  if [ ! -d "../organizations/peerOrganizations/org3.example.com" ]; then
+    addOrg3
+  fi
+
+  # Use the CLI container to create the configuration transaction needed to add
+  # Org3 to the network
+  echo
+  echo "###############################################################"
+  echo "####### Generate and submit config tx to add Org3 #############"
+  echo "###############################################################"
+  docker exec Org3cli ./scripts/org3-scripts/step1org3.sh $CHANNEL_NAME $CLI_DELAY $CLI_TIMEOUT $VERBOSE
+  if [ $? -ne 0 ]; then
+    echo "ERROR !!!! Unable to create config tx"
+    exit 1
+  fi
+
+  echo
+  echo "###############################################################"
+  echo "############### Have Org3 peers join network ##################"
+  echo "###############################################################"
+  docker exec Org3cli ./scripts/org3-scripts/step2org3.sh $CHANNEL_NAME $CLI_DELAY $CLI_TIMEOUT $VERBOSE
+  if [ $? -ne 0 ]; then
+    echo "ERROR !!!! Unable to have Org3 peers join network"
+    exit 1
+  fi
 }
 
 # Tear down running network
@@ -191,13 +221,13 @@ CLI_TIMEOUT=10
 #default for delay
 CLI_DELAY=3
 # channel name defaults to "mychannel"
-CHANNEL_NAME="mychannel"
+CHANNEL_NAME="default-channel"
 # use this as the docker compose couch file
-COMPOSE_FILE_COUCH_ORG4=docker/docker-compose-couch-org4.yaml
+COMPOSE_FILE_COUCH_ORG3=docker/docker-compose-couch-org3.yaml
 # use this as the default docker-compose yaml definition
-COMPOSE_FILE_ORG4=docker/docker-compose-org4.yaml
+COMPOSE_FILE_ORG3=docker/docker-compose-org3.yaml
 # certificate authorities compose file
-COMPOSE_FILE_CA_ORG4=docker/docker-compose-ca-org4.yaml
+COMPOSE_FILE_CA_ORG3=docker/docker-compose-ca-org3.yaml
 # default image tag
 IMAGETAG="latest"
 # default ca image tag
@@ -270,12 +300,14 @@ done
 
 # Determine whether starting, stopping, restarting or generating for announce
 if [ "$MODE" == "up" ]; then
-  echo "Add Org4 to channel '${CHANNEL_NAME}' with '${CLI_TIMEOUT}' seconds and CLI delay of '${CLI_DELAY}' seconds and using database '${DATABASE}'"
+  echo "Add Org3 to channel '${CHANNEL_NAME}' with '${CLI_TIMEOUT}' seconds and CLI delay of '${CLI_DELAY}' seconds and using database '${DATABASE}'"
   echo
+elif [ "$MODE" == "join" ]; then
+  echo "Joining Org3 to channel '${CHANNEL_NAME}'"
 elif [ "$MODE" == "down" ]; then
   EXPMODE="Stopping network"
 elif [ "$MODE" == "generate" ]; then
-  EXPMODE="Generating certs and organization definition for Org4"
+  EXPMODE="Generating certs and organization definition for Org3"
 else
   printHelp
   exit 1
@@ -283,12 +315,14 @@ fi
 
 #Create the network using docker compose
 if [ "${MODE}" == "up" ]; then
-  addOrg4
+  addOrg3
+elif [ "${MODE}" == "join" ]; then ## Join Org3 to a channel
+  joinChannel
 elif [ "${MODE}" == "down" ]; then ## Clear the network
   networkDown
 elif [ "${MODE}" == "generate" ]; then ## Generate Artifacts
-  generateOrg4
-  generateOrg4Definition
+  generateOrg3
+  generateOrg3Definition
 else
   printHelp
   exit 1

@@ -160,15 +160,15 @@ function createOrgs() {
 
     createOrg2
 
-    infoln "Create Org3 Identities"
+    infoln "Create Org4 Identities"
 
-    createOrg3
+    createOrg4
 
     infoln "Create Orderer Org Identities"
 
     createOrderer
 
-  infoln "Generate CCP files for Org1, Org2 and Org3"
+  infoln "Generate CCP files for Org1, Org2 and Org4"
   ./organizations/ccp-generate.sh
 }
 
@@ -179,7 +179,7 @@ function createOrgs() {
 # The configtxgen tool is used to create the genesis block. Configtxgen consumes a
 # "configtx.yaml" file that contains the definitions for the sample network. The
 # genesis block is defined using the "TwoOrgsOrdererGenesis" profile at the bottom
-# of the file. This profile defines a sample consortium, "SampleConsortium",
+# of the file. This profile defines a sample consortium, "VegiConsortium",
 # consisting of our two Peer Orgs. This consortium defines which organizations are
 # recognized as members of the network. The peer and ordering organizations are defined
 # in the "Profiles" section at the top of the file. As part of each organization
@@ -266,7 +266,40 @@ function createChannel() {
   if [ $? -ne 0 ]; then
     fatalln "Create channel failed"
   fi
+}
 
+function createChannelsOrg1Org4() {
+  if [ ! -d "organizations/peerOrganizations" ]; then
+    infoln "Bringing up network"
+    networkUp
+  fi
+
+ scripts/createChannelsOrg1Org4.sh "handel.channel.1" $CLI_DELAY $MAX_RETRY $VERBOSE "HandelChannel1"
+  if [ $? -ne 0 ]; then
+    fatalln "Create channel with profile HandelChannel1 failed"
+  fi
+
+ scripts/createChannelsOrg1Org4.sh "logistik.channel.1" $CLI_DELAY $MAX_RETRY $VERBOSE "LogistikChannel1"
+  if [ $? -ne 0 ]; then
+    fatalln "Create channel with profile LogistikChannel1 failed"
+  fi
+}
+
+function createChannelsOrg2Org4() {
+  if [ ! -d "organizations/peerOrganizations" ]; then
+    infoln "Bringing up network"
+    networkUp
+  fi
+
+ scripts/createChannelsOrg2Org4.sh "handel.channel.2" $CLI_DELAY $MAX_RETRY $VERBOSE "HandelChannel2"
+  if [ $? -ne 0 ]; then
+    fatalln "Create channel with profile HandelChannel2 failed"
+  fi
+
+ scripts/createChannelsOrg2Org4.sh "logistik.channel.2" $CLI_DELAY $MAX_RETRY $VERBOSE "LogistikChannel2"
+  if [ $? -ne 0 ]; then
+    fatalln "Create channel with profile LogistikChannel2 failed"
+  fi
 }
 
 ## Call the script to deploy a chaincode to the channel
@@ -318,8 +351,8 @@ CRYPTO="Certificate Authorities"
 MAX_RETRY=5
 # default for delay between commands
 CLI_DELAY=3
-# channel name defaults to "mychannel"
-CHANNEL_NAME="mychannel"
+# channel name defaults to "default-channel"
+CHANNEL_NAME="default-channel"
 # chaincode name defaults to "basic"
 CC_NAME="basic"
 # chaincode path defaults to "NA"
@@ -337,9 +370,9 @@ COMPOSE_FILE_COUCH=docker/docker-compose-couch.yaml
 # certificate authorities compose file
 COMPOSE_FILE_CA=docker/docker-compose-ca.yaml
 # use this as the docker compose couch file for org3
-COMPOSE_FILE_COUCH_ORG4=addOrg4/docker/docker-compose-couch-org4.yaml
+COMPOSE_FILE_COUCH_ORG3=addOrg3/docker/docker-compose-couch-org3.yaml
 # use this as the default docker-compose yaml definition for org3
-COMPOSE_FILE_ORG4=addOrg4/docker/docker-compose-org4.yaml
+COMPOSE_FILE_ORG3=addOrg3/docker/docker-compose-org3.yaml
 #
 # use go as the default language for chaincode
 CC_SRC_LANGUAGE="javascript"
@@ -468,6 +501,10 @@ if [ "$MODE" == "up" ]; then
 elif [ "$MODE" == "createChannel" ]; then
   infoln "Creating channel '${CHANNEL_NAME}'."
   infoln "If network is not up, starting nodes with CLI timeout of '${MAX_RETRY}' tries and CLI delay of '${CLI_DELAY}' seconds and using database '${DATABASE} ${CRYPTO_MODE}"
+elif [ "$MODE" == "createChannelsOrg1Org4" ]; then
+  infoln "Creating channels for Org1 and Org4: Handel and Logistik."
+elif [ "$MODE" == "createChannelsOrg2Org4" ]; then
+  infoln "Creating channels for Org2 and Org4: Handel and Logistik."
 elif [ "$MODE" == "down" ]; then
   infoln "Stopping network"
 elif [ "$MODE" == "restart" ]; then
@@ -483,6 +520,10 @@ if [ "${MODE}" == "up" ]; then
   networkUp
 elif [ "${MODE}" == "createChannel" ]; then
   createChannel
+elif [ "${MODE}" == "createChannelsOrg1Org4" ]; then
+  createChannelsOrg1Org4
+elif [ "${MODE}" == "createChannelsOrg2Org4" ]; then
+  createChannelsOrg2Org4
 elif [ "${MODE}" == "deployCC" ]; then
   deployCC
 elif [ "${MODE}" == "down" ]; then

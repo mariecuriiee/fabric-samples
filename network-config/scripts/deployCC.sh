@@ -268,13 +268,13 @@ chaincodeQuery() {
 ## package the chaincode
 packageChaincode 1
 
-## Install chaincode on peer0.org1 and peer0.org2
+## Install chaincode on peer0.org1, peer0.org2 and peer0.org4
 infoln "Installing chaincode on peer0.org1..."
 installChaincode 1
 infoln "Install chaincode on peer0.org2..."
 installChaincode 2
-infoln "Install chaincode on peer0.org3..."
-installChaincode 3
+infoln "Install chaincode on peer0.org4..."
+installChaincode 4
 
 ## query whether the chaincode is installed
 queryInstalled 1
@@ -282,28 +282,28 @@ queryInstalled 1
 ## approve the definition for org1, org2 and org3
 approveForMyOrg 1
 approveForMyOrg 2
-approveForMyOrg 3
+approveForMyOrg 4
 
 ## check whether the chaincode definition is ready to be committed
 ## expect them both to have approved
-checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
-checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
-checkCommitReadiness 3 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org3MSP\": true"
+checkCommitReadiness 1 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org4MSP\": true"
+checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org4MSP\": true"
+checkCommitReadiness 4 "\"Org1MSP\": true" "\"Org2MSP\": true" "\"Org4MSP\": true"
 
 ## now that we know for sure both orgs have approved, commit the definition
-commitChaincodeDefinition 1 2 3
+commitChaincodeDefinition 1 2 4
 
 ## query on both orgs to see that the definition committed successfully
 queryCommitted 1
 queryCommitted 2
-queryCommitted 3
+queryCommitted 4
 
 ## Invoke the chaincode - this does require that the chaincode have the 'initLedger'
 ## method defined
 if [ "$CC_INIT_FCN" = "NA" ]; then
   infoln "Chaincode initialization is not required"
 else
-  chaincodeInvokeInit 1 2 3
+  chaincodeInvokeInit 1 2 4
 fi
 
 exit 0

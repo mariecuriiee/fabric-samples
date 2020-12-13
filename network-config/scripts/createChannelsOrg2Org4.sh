@@ -6,7 +6,8 @@ CHANNEL_NAME="$1"
 DELAY="$2"
 MAX_RETRY="$3"
 VERBOSE="$4"
-: ${CHANNEL_NAME:="default-channel"}
+PROFILE="$5"
+: ${CHANNEL_NAME:="handel.channel.2"}
 : ${DELAY:="3"}
 : ${MAX_RETRY:="5"}
 : ${VERBOSE:="false"}
@@ -21,7 +22,7 @@ fi
 createChannelTx() {
 
 	set -x
-	configtxgen -profile ThreeOrgsChannel -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID $CHANNEL_NAME
+	configtxgen -profile $PROFILE -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID $CHANNEL_NAME
 	res=$?
 	{ set +x; } 2>/dev/null
 	if [ $res -ne 0 ]; then
@@ -32,11 +33,11 @@ createChannelTx() {
 
 createAncorPeerTx() {
 
-	for orgmsp in Org1MSP Org2MSP Org4MSP; do
+	for orgmsp in Org2MSP Org4MSP; do
 
 	infoln "Generating anchor peer update transaction for ${orgmsp}"
 	set -x
-	configtxgen -profile ThreeOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/${orgmsp}anchors.tx -channelID $CHANNEL_NAME -asOrg ${orgmsp}
+	configtxgen -profile $PROFILE -outputAnchorPeersUpdate ./channel-artifacts/${orgmsp}anchors.tx -channelID $CHANNEL_NAME -asOrg ${orgmsp}
 	res=$?
 	{ set +x; } 2>/dev/null
 	if [ $res -ne 0 ]; then
@@ -46,7 +47,7 @@ createAncorPeerTx() {
 }
 
 createChannel() {
-	setGlobals 1
+	setGlobals 2
 	# Poll in case the raft leader is not set yet
 	local rc=1
 	local COUNTER=1
@@ -128,16 +129,12 @@ infoln "Creating channel ${CHANNEL_NAME}"
 createChannel
 
 ## Join all the peers to the channel
-infoln "Join Org1 peers to the channel..."
-joinChannel 1
 infoln "Join Org2 peers to the channel..."
 joinChannel 2
 infoln "Join Org4 peers to the channel..."
 joinChannel 4
 
 ## Set the anchor peers for each org in the channel
-infoln "Updating anchor peers for org1..."
-updateAnchorPeers 1
 infoln "Updating anchor peers for org2..."
 updateAnchorPeers 2
 infoln "Updating anchor peers for org4..."
